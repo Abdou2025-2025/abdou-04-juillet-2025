@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { DialogTitle } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { formatDistanceToNow, parseISO } from "date-fns";
@@ -174,7 +175,7 @@ export default function Comments({ postId, comments, onAddComment, onAddReply, o
     <div className="fixed inset-0 z-50 bg-black/40 flex items-end md:items-center justify-center overflow-x-hidden">
       <div className="bg-background w-full max-w-md rounded-t-2xl md:rounded-2xl shadow-lg p-4 max-h-[90vh] overflow-y-auto pb-24">
         <div className="flex justify-between items-center mb-2">
-          <h2 className="text-lg font-bold">Commentaires</h2>
+          <DialogTitle className="text-lg font-bold">Commentaires</DialogTitle>
           <Button variant="ghost" type="button" onClick={onClose}>Fermer</Button>
         </div>
         <div className="flex gap-2 items-start mt-2 mb-4">
@@ -240,7 +241,7 @@ export default function Comments({ postId, comments, onAddComment, onAddReply, o
         <div className="fixed inset-0 z-50 bg-black/40 flex items-end md:items-center justify-center">
           <div className="bg-background w-full max-w-md rounded-t-2xl md:rounded-2xl shadow-lg p-4 max-h-[90vh] overflow-y-auto pb-24">
             <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-bold">Sous-réponses</h2>
+              <DialogTitle className="text-lg font-bold">Sous-réponses</DialogTitle>
               <Button variant="ghost" type="button" onClick={() => setShowThreadModal(null)}>Retour</Button>
             </div>
             <div className="space-y-4">
@@ -296,4 +297,4 @@ export default function Comments({ postId, comments, onAddComment, onAddReply, o
       )}
     </div>
   );
-} 
+}

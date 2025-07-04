@@ -73,4 +73,4 @@ export function usePosts() {
   }, []);
 
   return { posts, loading, error, fetchPosts, createPost, updatePost, deletePost, likePost, unlikePost, votePost };
-} 
+}

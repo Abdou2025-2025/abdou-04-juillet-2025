@@ -431,7 +431,7 @@ export default function Chat() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
             <div className="bg-zinc-900 rounded-2xl shadow-2xl p-8 w-full max-w-xs animate-fade-in flex flex-col gap-6 relative text-white">
               <button className="absolute top-3 right-3 text-gray-400 hover:text-white" onClick={() => setShowMembersModal(false)} aria-label="Fermer">✕</button>
-              <h2 className="text-xl font-bold text-center mb-4">Membres du groupe</h2>
+              <DialogTitle className="text-xl font-bold text-center mb-4">Membres du groupe</DialogTitle>
               <div className="flex flex-col gap-3 max-h-72 overflow-y-auto">
                 {groupMembers.map((user: string) => (
                   <div key={user} className="flex items-center gap-3 cursor-pointer hover:bg-zinc-800 rounded-lg p-2 transition"
@@ -591,7 +591,7 @@ export default function Chat() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
           <div className="bg-zinc-900 rounded-2xl shadow-2xl p-8 w-full max-w-xs animate-fade-in flex flex-col gap-6 relative text-white">
             <button className="absolute top-3 right-3 text-gray-400 hover:text-white" onClick={() => setShowGroupModal(false)} aria-label="Fermer">✕</button>
-            <h2 className="text-xl font-bold text-center mb-2">Créer un groupe</h2>
+            <DialogTitle className="text-xl font-bold text-center mb-2">Créer un groupe</DialogTitle>
             <input
               className="w-full border border-zinc-700 rounded p-2 bg-zinc-800 text-white placeholder:text-zinc-400 mb-2"
               placeholder="Nom du groupe"
@@ -680,7 +680,7 @@ export default function Chat() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
           <div className="bg-zinc-900 rounded-2xl shadow-2xl p-8 w-full max-w-xs animate-fade-in flex flex-col gap-6 relative text-white">
             <button className="absolute top-3 right-3 text-gray-400 hover:text-white" onClick={() => setShowNewChatModal(false)} aria-label="Fermer">✕</button>
-            <h2 className="text-xl font-bold text-center mb-2">Nouveau chat</h2>
+            <DialogTitle className="text-xl font-bold text-center mb-2">Nouveau chat</DialogTitle>
             <div className="flex flex-col gap-4">
               <button
                 className="flex items-center gap-3 p-4 rounded-xl border border-zinc-700 hover:bg-zinc-800 transition group"
@@ -706,7 +706,7 @@ export default function Chat() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
           <div className="bg-zinc-900 rounded-2xl shadow-2xl p-8 w-full max-w-xs animate-fade-in flex flex-col gap-6 relative text-white">
             <button className="absolute top-3 right-3 text-gray-400 hover:text-white" onClick={() => setShowSoloModal(false)} aria-label="Fermer">✕</button>
-            <h2 className="text-xl font-bold text-center mb-2">Nouvelle discussion</h2>
+            <DialogTitle className="text-xl font-bold text-center mb-2">Nouvelle discussion</DialogTitle>
             <div className="mb-2">
               <input
                 className="w-full border border-zinc-700 rounded p-2 bg-zinc-800 text-white placeholder:text-zinc-400"
