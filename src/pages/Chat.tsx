@@ -427,27 +427,26 @@ export default function Chat() {
         </div>
 
         {/* MODALE MEMBRES DU GROUPE */}
-        {showMembersModal && isGroup && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-            <div className="bg-zinc-900 rounded-2xl shadow-2xl p-8 w-full max-w-xs animate-fade-in flex flex-col gap-6 relative text-white">
-              <button className="absolute top-3 right-3 text-gray-400 hover:text-white" onClick={() => setShowMembersModal(false)} aria-label="Fermer">✕</button>
-              <DialogTitle className="text-xl font-bold text-center mb-4">Membres du groupe</DialogTitle>
-              <div className="flex flex-col gap-3 max-h-72 overflow-y-auto">
-                {groupMembers.map((user: string) => (
-                  <div key={user} className="flex items-center gap-3 cursor-pointer hover:bg-zinc-800 rounded-lg p-2 transition"
-                    onClick={() => { setShowMembersModal(false); navigate(`/profile/${user}`); }}
-                  >
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user)}`} alt={user} />
-                      <AvatarFallback>{user.slice(0,2)}</AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium text-white">{user}</span>
-                  </div>
-                ))}
-              </div>
+        <Dialog open={showMembersModal} onOpenChange={setShowMembersModal}>
+          <DialogContent className="max-w-xs mx-auto">
+            <DialogHeader>
+              <DialogTitle>Membres du groupe</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 max-h-72 overflow-y-auto">
+              {groupMembers.map((user: string) => (
+                <div key={user} className="flex items-center gap-3 cursor-pointer hover:bg-muted rounded-lg p-2 transition"
+                  onClick={() => { setShowMembersModal(false); navigate(`/profile/${user}`); }}
+                >
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user)}`} alt={user} />
+                    <AvatarFallback>{user.slice(0,2)}</AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium">{user}</span>
+                </div>
+              ))}
             </div>
-          </div>
-        )}
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -587,178 +586,175 @@ export default function Chat() {
       </main>
 
       {/* Group Modal */}
-      {showGroupModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-zinc-900 rounded-2xl shadow-2xl p-8 w-full max-w-xs animate-fade-in flex flex-col gap-6 relative text-white">
-            <button className="absolute top-3 right-3 text-gray-400 hover:text-white" onClick={() => setShowGroupModal(false)} aria-label="Fermer">✕</button>
-            <DialogTitle className="text-xl font-bold text-center mb-2">Créer un groupe</DialogTitle>
+      <Dialog open={showGroupModal} onOpenChange={setShowGroupModal}>
+        <DialogContent className="max-w-xs mx-auto">
+          <DialogHeader>
+            <DialogTitle>Créer un groupe</DialogTitle>
+          </DialogHeader>
+          <input
+            className="w-full border border-border rounded p-2 bg-background text-foreground placeholder:text-muted-foreground mb-2"
+            placeholder="Nom du groupe"
+            value={groupName}
+            onChange={e => setGroupName(e.target.value)}
+            required
+          />
+          <div className="mb-2">
             <input
-              className="w-full border border-zinc-700 rounded p-2 bg-zinc-800 text-white placeholder:text-zinc-400 mb-2"
-              placeholder="Nom du groupe"
-              value={groupName}
-              onChange={e => setGroupName(e.target.value)}
-              required
+              className="w-full border border-border rounded p-2 bg-background text-foreground placeholder:text-muted-foreground"
+              placeholder="Rechercher un utilisateur..."
+              value={groupUserSearch}
+              onChange={e => setGroupUserSearch(e.target.value)}
             />
-            <div className="mb-2">
-              <input
-                className="w-full border border-zinc-700 rounded p-2 bg-zinc-800 text-white placeholder:text-zinc-400"
-                placeholder="Rechercher un utilisateur..."
-                value={groupUserSearch}
-                onChange={e => setGroupUserSearch(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-2 max-h-40 overflow-y-auto">
-              {filteredUsers.filter(u => u.toLowerCase().includes(groupUserSearch.toLowerCase())).map(user => (
-                <label key={user} className="flex items-center gap-2 p-2 rounded-lg hover:bg-zinc-800 transition cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={groupMembers.includes(user)}
-                    onChange={e => {
-                      if (e.target.checked) setGroupMembers(m => [...m, user]);
-                      else setGroupMembers(m => m.filter(u2 => u2 !== user));
-                    }}
-                    className="accent-yellow-500"
-                  />
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user)}`} alt={user} />
-                    <AvatarFallback>{user.slice(0,2)}</AvatarFallback>
-                  </Avatar>
-                  <span className="font-medium text-white">{user}</span>
-                </label>
-              ))}
-              {filteredUsers.filter(u => u.toLowerCase().includes(groupUserSearch.toLowerCase())).length === 0 && (
-                <span className="text-sm text-zinc-400 text-center">Aucun utilisateur trouvé</span>
-              )}
-            </div>
-            <button
-              className="mt-4 w-full py-2 rounded-lg bg-yellow-500 text-black font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!groupName || groupMembers.length < 2}
-              onClick={() => {
-                if (groupName && groupMembers.length >= 2) {
-                  const groupId = Date.now().toString();
-                  const newGroup = {
-                    id: groupId,
-                    type: "group",
-                    name: groupName,
-                    avatar: groupAvatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(groupName)}`,
-                    members: groupMembers,
-                    lastMessage: `Bienvenue dans ${groupName} !`,
-                    timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
-                    unread: 0,
-                    participants: groupMembers.length + 1
-                  };
-                  setConversations(prev => [newGroup, ...prev]);
-                  setMessagesByConversation(prev => ({
-                    ...prev,
-                    [groupId]: [{
-                      id: Date.now().toString(),
-                      senderId: "me",
-                      senderName: "Vous",
-                      content: `Bienvenue dans ${groupName} !`,
-                      timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
-                      status: "sent"
-                    }]
-                  }));
-                  setSelectedChat(groupId);
-                  setShowGroupModal(false);
-                  setGroupName("");
-                  setGroupMembers([]);
-                  setGroupAvatar("");
-                  setGroupUserSearch("");
-                  toast.success(`Groupe ${groupName} créé !`);
-                }
-              }}
-            >
-              Créer le groupe
-            </button>
           </div>
-        </div>
-      )}
+          <div className="flex flex-col gap-2 max-h-40 overflow-y-auto">
+            {filteredUsers.filter(u => u.toLowerCase().includes(groupUserSearch.toLowerCase())).map(user => (
+              <label key={user} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted transition cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={groupMembers.includes(user)}
+                  onChange={e => {
+                    if (e.target.checked) setGroupMembers(m => [...m, user]);
+                    else setGroupMembers(m => m.filter(u2 => u2 !== user));
+                  }}
+                  className="accent-primary"
+                />
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src={`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user)}`} alt={user} />
+                  <AvatarFallback>{user.slice(0,2)}</AvatarFallback>
+                </Avatar>
+                <span className="font-medium">{user}</span>
+              </label>
+            ))}
+            {filteredUsers.filter(u => u.toLowerCase().includes(groupUserSearch.toLowerCase())).length === 0 && (
+              <span className="text-sm text-muted-foreground text-center">Aucun utilisateur trouvé</span>
+            )}
+          </div>
+          <Button
+            className="mt-4 w-full btn-golden"
+            disabled={!groupName || groupMembers.length < 2}
+            onClick={() => {
+              if (groupName && groupMembers.length >= 2) {
+                const groupId = Date.now().toString();
+                const newGroup = {
+                  id: groupId,
+                  type: "group",
+                  name: groupName,
+                  avatar: groupAvatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(groupName)}`,
+                  members: groupMembers,
+                  lastMessage: `Bienvenue dans ${groupName} !`,
+                  timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+                  unread: 0,
+                  participants: groupMembers.length + 1
+                };
+                setConversations(prev => [newGroup, ...prev]);
+                setMessagesByConversation(prev => ({
+                  ...prev,
+                  [groupId]: [{
+                    id: Date.now().toString(),
+                    senderId: "me",
+                    senderName: "Vous",
+                    content: `Bienvenue dans ${groupName} !`,
+                    timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+                    status: "sent"
+                  }]
+                }));
+                setSelectedChat(groupId);
+                setShowGroupModal(false);
+                setGroupName("");
+                setGroupMembers([]);
+                setGroupAvatar("");
+                setGroupUserSearch("");
+                toast.success(`Groupe ${groupName} créé !`);
+              }
+            }}
+          >
+            Créer le groupe
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       {/* MODALE NOUVEAU CHAT (CHOIX) */}
-      {showNewChatModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-zinc-900 rounded-2xl shadow-2xl p-8 w-full max-w-xs animate-fade-in flex flex-col gap-6 relative text-white">
-            <button className="absolute top-3 right-3 text-gray-400 hover:text-white" onClick={() => setShowNewChatModal(false)} aria-label="Fermer">✕</button>
-            <DialogTitle className="text-xl font-bold text-center mb-2">Nouveau chat</DialogTitle>
-            <div className="flex flex-col gap-4">
-              <button
-                className="flex items-center gap-3 p-4 rounded-xl border border-zinc-700 hover:bg-zinc-800 transition group"
-                onClick={() => { setShowSoloModal(true); setShowNewChatModal(false); }}
-              >
-                <Plus className="w-6 h-6 text-yellow-400 group-hover:scale-110 transition" />
-                <span className="font-medium text-white">Créer une discussion solo</span>
-              </button>
-              <button
-                className="flex items-center gap-3 p-4 rounded-xl border border-zinc-700 hover:bg-zinc-800 transition group"
-                onClick={() => { setShowGroupModal(true); setShowNewChatModal(false); }}
-              >
-                <span className="inline-flex items-center justify-center w-6 h-6 bg-yellow-100 rounded-full"><span className="text-lg">👥</span></span>
-                <span className="font-medium text-white">Créer un groupe</span>
-              </button>
-            </div>
+      <Dialog open={showNewChatModal} onOpenChange={setShowNewChatModal}>
+        <DialogContent className="max-w-xs mx-auto">
+          <DialogHeader>
+            <DialogTitle>Nouveau chat</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <button
+              className="flex items-center gap-3 p-4 rounded-xl border border-border hover:bg-muted transition group"
+              onClick={() => { setShowSoloModal(true); setShowNewChatModal(false); }}
+            >
+              <Plus className="w-6 h-6 text-primary group-hover:scale-110 transition" />
+              <span className="font-medium">Créer une discussion solo</span>
+            </button>
+            <button
+              className="flex items-center gap-3 p-4 rounded-xl border border-border hover:bg-muted transition group"
+              onClick={() => { setShowGroupModal(true); setShowNewChatModal(false); }}
+            >
+              <span className="inline-flex items-center justify-center w-6 h-6 bg-muted rounded-full"><span className="text-lg">👥</span></span>
+              <span className="font-medium">Créer un groupe</span>
+            </button>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
-      {/* MODALE SOLO (fond noir, texte blanc, style harmonisé) */}
-      {showSoloModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-zinc-900 rounded-2xl shadow-2xl p-8 w-full max-w-xs animate-fade-in flex flex-col gap-6 relative text-white">
-            <button className="absolute top-3 right-3 text-gray-400 hover:text-white" onClick={() => setShowSoloModal(false)} aria-label="Fermer">✕</button>
-            <DialogTitle className="text-xl font-bold text-center mb-2">Nouvelle discussion</DialogTitle>
-            <div className="mb-2">
-              <input
-                className="w-full border border-zinc-700 rounded p-2 bg-zinc-800 text-white placeholder:text-zinc-400"
-                placeholder="Rechercher un utilisateur..."
-                value={groupUserSearch}
-                onChange={e => setGroupUserSearch(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
-              {filteredUsers.filter(u => u.toLowerCase().includes(groupUserSearch.toLowerCase())).map(user => (
-                <button
-                  key={user}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-800 transition"
-                  onClick={() => {
-                    // Créer la conversation privée si elle n'existe pas déjà
-                    const exists = conversations.some(c => c.type === "private" && c.name === user);
-                    if (!exists) {
-                      const newConv = {
-                        id: Date.now().toString(),
-                        type: "private",
-                        name: user,
-                        avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user)}`,
-                        lastMessage: "",
-                        timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
-                        unread: 0,
-                        online: true
-                      };
-                      setConversations(prev => [newConv, ...prev]);
-                      setMessagesByConversation(prev => ({ ...prev, [newConv.id]: [] }));
-                      setSelectedChat(newConv.id);
-                    } else {
-                      const conv = conversations.find(c => c.type === "private" && c.name === user);
-                      setSelectedChat(conv?.id || null);
-                    }
-                    setShowSoloModal(false);
-                    setGroupUserSearch("");
-                  }}
-                >
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user)}`} alt={user} />
-                    <AvatarFallback>{user.slice(0,2)}</AvatarFallback>
-                  </Avatar>
-                  <span className="font-medium text-white">{user}</span>
-                </button>
-              ))}
-              {filteredUsers.filter(u => u.toLowerCase().includes(groupUserSearch.toLowerCase())).length === 0 && (
-                <span className="text-sm text-zinc-400 text-center">Aucun utilisateur trouvé</span>
-              )}
-            </div>
+      {/* MODALE SOLO */}
+      <Dialog open={showSoloModal} onOpenChange={setShowSoloModal}>
+        <DialogContent className="max-w-xs mx-auto">
+          <DialogHeader>
+            <DialogTitle>Nouvelle discussion</DialogTitle>
+          </DialogHeader>
+          <div className="mb-2">
+            <input
+              className="w-full border border-border rounded p-2 bg-background text-foreground placeholder:text-muted-foreground"
+              placeholder="Rechercher un utilisateur..."
+              value={groupUserSearch}
+              onChange={e => setGroupUserSearch(e.target.value)}
+            />
           </div>
-        </div>
-      )}
+          <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+            {filteredUsers.filter(u => u.toLowerCase().includes(groupUserSearch.toLowerCase())).map(user => (
+              <button
+                key={user}
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition"
+                onClick={() => {
+                  // Créer la conversation privée si elle n'existe pas déjà
+                  const exists = conversations.some(c => c.type === "private" && c.name === user);
+                  if (!exists) {
+                    const newConv = {
+                      id: Date.now().toString(),
+                      type: "private",
+                      name: user,
+                      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user)}`,
+                      lastMessage: "",
+                      timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+                      unread: 0,
+                      online: true
+                    };
+                    setConversations(prev => [newConv, ...prev]);
+                    setMessagesByConversation(prev => ({ ...prev, [newConv.id]: [] }));
+                    setSelectedChat(newConv.id);
+                  } else {
+                    const conv = conversations.find(c => c.type === "private" && c.name === user);
+                    setSelectedChat(conv?.id || null);
+                  }
+                  setShowSoloModal(false);
+                  setGroupUserSearch("");
+                }}
+              >
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src={`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user)}`} alt={user} />
+                  <AvatarFallback>{user.slice(0,2)}</AvatarFallback>
+                </Avatar>
+                <span className="font-medium">{user}</span>
+              </button>
+            ))}
+            {filteredUsers.filter(u => u.toLowerCase().includes(groupUserSearch.toLowerCase())).length === 0 && (
+              <span className="text-sm text-muted-foreground text-center">Aucun utilisateur trouvé</span>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

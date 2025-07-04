@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription } from './dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './dialog';
 import { Button } from './button';
 import { Input } from './input';
 import { useAuth } from '@/hooks/useAuth';
@@ -32,12 +32,14 @@ export function AuthModal({ isOpen, onClose }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-xs mx-auto p-6 rounded-2xl bg-background border border-border shadow-xl">
-        <h2 className="text-xl font-bold text-center mb-4">
-          {mode === 'login' ? 'Connexion' : 'Créer un compte'}
-        </h2>
-        <DialogDescription className="text-center mb-4">
-          {mode === 'login' ? 'Connectez-vous à votre compte' : 'Créez votre compte pour commencer'}
-        </DialogDescription>
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold text-center">
+            {mode === 'login' ? 'Connexion' : 'Créer un compte'}
+          </DialogTitle>
+          <DialogDescription className="text-center">
+            {mode === 'login' ? 'Connectez-vous à votre compte' : 'Créez votre compte pour commencer'}
+          </DialogDescription>
+        </DialogHeader>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <Input
             type="email"
@@ -77,4 +79,4 @@ export function AuthModal({ isOpen, onClose }) {
       </DialogContent>
     </Dialog>
   );
-} 
+}
