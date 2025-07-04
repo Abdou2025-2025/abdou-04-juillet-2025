@@ -8,7 +8,10 @@ export function usePosts() {
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .order('created_at', { ascending: false });
     setPosts(data || []);
     setError(error ? error.message : null);
     setLoading(false);
@@ -23,9 +26,19 @@ export function usePosts() {
   }, [fetchPosts]);
 
   const createPost = useCallback(async (payload) => {
-    const { data, error } = await supabase.from('posts').insert([payload]).select().single();
-    if (!error) setPosts((prev) => [data, ...prev]);
-    return { data, error };
+    // Remove likes, comments, shares from payload as these are not columns in the posts table
+    const { likes, comments, shares, ...cleanPayload } = payload;
+    
+    const { data, error } = await supabase
+      .from('posts')
+      .insert([cleanPayload])
+      .select();
+      
+    if (!error && data && data.length > 0) {
+      setPosts((prev) => [data[0], ...prev]);
+      return { data: data[0], error };
+    }
+    return { data: null, error };
   }, []);
 
   const updatePost = useCallback(async (id, updates) => {
@@ -34,24 +47,27 @@ export function usePosts() {
       Object.entries(updates).filter(([_, value]) => value !== undefined && value !== null)
     );
     
+    // Remove likes, comments, shares from updates as these are not columns in the posts table
+    const { likes, comments, shares, ...finalUpdates } = cleanUpdates;
+    
     // Ensure poll is properly serialized if it exists
-    if (cleanUpdates.poll && typeof cleanUpdates.poll === 'object') {
-      cleanUpdates.poll = JSON.stringify(cleanUpdates.poll);
+    if (finalUpdates.poll && typeof finalUpdates.poll === 'object') {
+      finalUpdates.poll = JSON.stringify(finalUpdates.poll);
     }
     
     const { data, error } = await supabase
       .from('posts')
-      .update(cleanUpdates)
+      .update(finalUpdates)
       .eq('id', id)
-      .select()
-      .single();
+      .select();
       
-    if (!error) {
-      setPosts((prev) => prev.map(p => p.id === id ? data : p));
-    } else {
+    if (!error && data && data.length > 0) {
+      setPosts((prev) => prev.map(p => p.id === id ? data[0] : p));
+      return { data: data[0], error };
+    } else if (error) {
       console.error('Error updating post:', error);
     }
-    return { data, error };
+    return { data: null, error };
   }, []);
 
   const deletePost = useCallback(async (id) => {
