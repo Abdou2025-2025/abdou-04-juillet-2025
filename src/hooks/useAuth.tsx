@@ -1,5 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabaseClient';
+
+// Simulation d'un utilisateur connecté
+const mockUser = {
+  id: 'user-123',
+  email: 'user@example.com',
+  name: 'Utilisateur Test',
+  stats: {
+    posts: 12,
+    likes: 45,
+    votes: 23
+  },
+  favorites: ['Mbappé', 'Haaland', 'Bellingham']
+};
 
 export function useAuth() {
   const [user, setUser] = useState(null);
@@ -7,44 +19,62 @@ export function useAuth() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const session = supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+    // Simulation d'une vérification d'authentification
+    const checkAuth = () => {
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      if (isLoggedIn) {
+        setUser(mockUser);
+      }
       setLoading(false);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => {
-      listener.subscription.unsubscribe();
     };
+
+    setTimeout(checkAuth, 500); // Simulation d'un délai de chargement
   }, []);
 
   const signUp = useCallback(async (email, password) => {
     setLoading(true);
     setError(null);
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    
+    // Simulation d'inscription
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    localStorage.setItem('isLoggedIn', 'true');
+    setUser(mockUser);
     setLoading(false);
-    if (error) setError(error.message);
-    return { data, error };
+    
+    return { data: { user: mockUser }, error: null };
   }, []);
 
   const signIn = useCallback(async (email, password) => {
     setLoading(true);
     setError(null);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) setError(error.message);
-    return { data, error };
+    
+    // Simulation de connexion
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    if (email === 'test@test.com' && password === 'password') {
+      localStorage.setItem('isLoggedIn', 'true');
+      setUser(mockUser);
+      setLoading(false);
+      return { data: { user: mockUser }, error: null };
+    } else {
+      const error = { message: 'Email ou mot de passe incorrect' };
+      setError(error.message);
+      setLoading(false);
+      return { data: null, error };
+    }
   }, []);
 
   const signOut = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.signOut();
+    
+    localStorage.removeItem('isLoggedIn');
+    setUser(null);
     setLoading(false);
-    if (error) setError(error.message);
-    return { error };
+    
+    return { error: null };
   }, []);
 
   return { user, loading, error, signUp, signIn, signOut };
-} 
+}

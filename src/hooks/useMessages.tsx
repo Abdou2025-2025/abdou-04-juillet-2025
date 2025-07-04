@@ -1,35 +1,28 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabaseClient';
 
 export function useMessages(conversationId) {
   const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchMessages = useCallback(async () => {
+    if (!conversationId) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true });
-    setMessages(data || []);
-    setError(error ? error.message : null);
+    // Simulation de messages
+    const mockMessages = [];
+    setMessages(mockMessages);
     setLoading(false);
   }, [conversationId]);
 
   useEffect(() => {
-    if (!conversationId) return;
-    fetchMessages();
-    const channel = supabase.channel('public:messages')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` }, fetchMessages)
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    if (conversationId) fetchMessages();
   }, [conversationId, fetchMessages]);
 
   const sendMessage = useCallback(async (payload) => {
-    return await supabase.from('messages').insert([payload]);
+    const newMessage = { id: Date.now().toString(), ...payload };
+    setMessages(prev => [...prev, newMessage]);
+    return { data: newMessage, error: null };
   }, []);
 
   return { messages, loading, error, fetchMessages, sendMessage };
-} 
+}

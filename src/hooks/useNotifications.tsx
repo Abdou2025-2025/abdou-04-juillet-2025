@@ -1,43 +1,51 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabaseClient';
 
 export function useNotifications(userId) {
   const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchNotifications = useCallback(async () => {
+    if (!userId) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-    setNotifications(data || []);
-    setError(error ? error.message : null);
+    
+    // Simulation de notifications
+    const mockNotifications = [
+      {
+        id: '1',
+        user_id: userId,
+        title: 'Nouveau vote !',
+        description: 'Quelqu\'un a voté pour votre joueur favori',
+        read: false,
+        created_at: new Date().toISOString(),
+        link: '/ranking'
+      }
+    ];
+    
+    setNotifications(mockNotifications);
     setLoading(false);
   }, [userId]);
 
   useEffect(() => {
-    if (!userId) return;
-    fetchNotifications();
-    const channel = supabase.channel('public:notifications')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, fetchNotifications)
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    if (userId) fetchNotifications();
   }, [userId, fetchNotifications]);
 
   const markAsRead = useCallback(async (notificationId) => {
-    return await supabase.from('notifications').update({ read: true }).eq('id', notificationId);
+    setNotifications(prev => 
+      prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+    );
+    return { error: null };
   }, []);
 
   const markAllAsRead = useCallback(async () => {
-    return await supabase.from('notifications').update({ read: true }).eq('user_id', userId);
-  }, [userId]);
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    return { error: null };
+  }, []);
 
   const deleteNotification = useCallback(async (notificationId) => {
-    return await supabase.from('notifications').delete().eq('id', notificationId);
+    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    return { error: null };
   }, []);
 
   return { notifications, loading, error, fetchNotifications, markAsRead, markAllAsRead, deleteNotification };
-} 
+}
