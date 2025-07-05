@@ -4,14 +4,19 @@ import { Button } from './button';
 import { Input } from './input';
 import { useAuth } from '@/hooks/useAuth';
 
-export function AuthModal({ isOpen, onClose }) {
+interface AuthModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const { signIn, signUp, loading, error } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [formError, setFormError] = useState<string | null>(null);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
     if (!email || !password) {
@@ -20,11 +25,11 @@ export function AuthModal({ isOpen, onClose }) {
     }
     if (mode === 'login') {
       const { error } = await signIn(email, password);
-      if (error) setFormError(error.message);
+      if (error) setFormError(error);
       else onClose();
     } else {
       const { error } = await signUp(email, password);
-      if (error) setFormError(error.message);
+      if (error) setFormError(error);
       else onClose();
     }
   };

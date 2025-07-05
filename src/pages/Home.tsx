@@ -17,17 +17,28 @@ import { useLikes } from "@/hooks/useLikes";
 import { useVotes } from "@/hooks/useVotes";
 import { useNotifications } from "@/hooks/useNotifications";
 
+interface PlayerWithStats {
+  id: string;
+  name: string;
+  position: string;
+  club: string;
+  photo: string;
+  created_at: string;
+  votes?: number;
+  isLiked?: boolean;
+}
+
 export default function Home() {
   const { user } = useAuth();
   const { players, loading: loadingPlayers } = usePlayers();
   const { notifications, loading: loadingNotifs, markAsRead, markAllAsRead, deleteNotification } = useNotifications(user?.id);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [showCountdown, setShowCountdown] = useState(false);
-  const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
-  const [showPlayerDetails, setShowPlayerDetails] = useState(false);
-  const [showNotifModal, setShowNotifModal] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState("all");
+  const [showCountdown, setShowCountdown] = useState<boolean>(false);
+  const [selectedPlayer, setSelectedPlayer] = useState<PlayerWithStats | null>(null);
+  const [showPlayerDetails, setShowPlayerDetails] = useState<boolean>(false);
+  const [showNotifModal, setShowNotifModal] = useState<boolean>(false);
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
 
   const unreadCount = notifications.filter(n => !n.read).length;
 

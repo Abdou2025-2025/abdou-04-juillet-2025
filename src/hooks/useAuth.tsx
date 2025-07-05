@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { User } from '@supabase/supabase-js';
 
 export function useAuth() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const getSession = async () => {
@@ -23,7 +24,7 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = useCallback(async (email, password) => {
+  const signUp = useCallback(async (email: string, password: string) => {
     setLoading(true);
     setError(null);
     
@@ -38,13 +39,13 @@ export function useAuth() {
     setLoading(false);
     if (error) {
       setError(error.message);
-      return { data: null, error };
+      return { data: null, error: error.message };
     }
     
-    return { data, error: null };
+    return { data: data.user, error: null };
   }, []);
 
-  const signIn = useCallback(async (email, password) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     setLoading(true);
     setError(null);
     
@@ -56,10 +57,10 @@ export function useAuth() {
     setLoading(false);
     if (error) {
       setError(error.message);
-      return { data: null, error };
+      return { data: null, error: error.message };
     }
     
-    return { data, error: null };
+    return { data: data.user, error: null };
   }, []);
 
   const signOut = useCallback(async () => {
@@ -73,7 +74,7 @@ export function useAuth() {
       setError(error.message);
     }
     
-    return { error };
+    return { error: error?.message || null };
   }, []);
 
   return { user, loading, error, signUp, signIn, signOut };
