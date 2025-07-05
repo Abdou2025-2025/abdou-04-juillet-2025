@@ -115,8 +115,7 @@ export default function Profile() {
       localStorage.setItem('theme', 'dark');
       setIsDark(true);
     }
-    // DEBUG
-    console.log('dark?', document.documentElement.classList.contains('dark'), 'body:', document.body.classList.contains('dark'));
+    
   };
 
   const handlePasswordChange = () => {

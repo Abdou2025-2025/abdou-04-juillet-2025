@@ -1,7 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 
+export interface Player {
+  id: string;
+  name: string;
+  position: string;
+  club: string;
+  photo: string;
+  created_at: string;
+}
+
 // Données simulées pour les joueurs
-const mockPlayers = [
+const mockPlayers: Player[] = [
   {
     id: '1',
     name: 'Kylian Mbappé',
@@ -37,16 +46,23 @@ const mockPlayers = [
 ];
 
 export function usePlayers() {
-  const [players, setPlayers] = useState(mockPlayers);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [players, setPlayers] = useState<Player[]>(mockPlayers);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchPlayers = useCallback(async () => {
     setLoading(true);
-    // Simulation d'un délai de chargement
-    await new Promise(resolve => setTimeout(resolve, 300));
-    setPlayers(mockPlayers);
-    setLoading(false);
+    setError(null);
+    
+    try {
+      // Simulation d'un délai de chargement
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setPlayers(mockPlayers);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
