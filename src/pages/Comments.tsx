@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { formatDistanceToNow, parseISO } from "date-fns";
@@ -172,78 +172,84 @@ export default function Comments({ postId, comments, onAddComment, onAddReply, o
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-end md:items-center justify-center overflow-x-hidden">
-      <div className="bg-background w-full max-w-md rounded-t-2xl md:rounded-2xl shadow-lg p-4 max-h-[90vh] overflow-y-auto pb-24">
-        <div className="flex justify-between items-center mb-2">
-          <DialogTitle className="text-lg font-bold">Commentaires</DialogTitle>
-          <Button variant="ghost" type="button" onClick={onClose}>Fermer</Button>
-        </div>
-        <div className="flex gap-2 items-start mt-2 mb-4">
-          <Avatar className="w-8 h-8"><AvatarFallback>VO</AvatarFallback></Avatar>
-          <div className="flex-1">
-            <Textarea
-              value={newComment}
-              onChange={e => {
-                setNewComment(e.target.value);
-                const match = /@([\w]*)$/.exec(e.target.value.slice(0, e.target.selectionStart));
-                if (match) {
-                  setAutocompleteUsers(allUsers.filter(u => u.toLowerCase().startsWith(match[1].toLowerCase()) && u !== "Vous"));
-                  setShowAutocomplete(true);
-                } else {
-                  setShowAutocomplete(false);
-                }
-              }}
-              onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
-              placeholder="Ajouter un commentaire..."
-              className="w-full min-h-[60px]"
-            />
-            {showAutocomplete && autocompleteUsers.length > 0 && (
-              <div className="absolute bg-card border rounded shadow z-50 mt-1 max-h-40 overflow-auto">
-                {autocompleteUsers.map(user => (
-                  <div
-                    key={user}
-                    className="px-3 py-2 hover:bg-muted cursor-pointer"
-                    onMouseDown={() => {
-                      setNewComment(c => c.replace(/@([\w]*)$/, `@${user} `));
-                      setShowAutocomplete(false);
-                    }}
-                  >
-                    @{user}
-                  </div>
-                ))}
+    <>
+      <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto pb-24">
+          <DialogHeader>
+            <div className="flex justify-between items-center">
+              <DialogTitle className="text-lg font-bold">Commentaires</DialogTitle>
+              <Button variant="ghost" type="button" onClick={onClose}>Fermer</Button>
+            </div>
+          </DialogHeader>
+          <div className="flex gap-2 items-start mt-2 mb-4">
+            <Avatar className="w-8 h-8"><AvatarFallback>VO</AvatarFallback></Avatar>
+            <div className="flex-1">
+              <Textarea
+                value={newComment}
+                onChange={e => {
+                  setNewComment(e.target.value);
+                  const match = /@([\w]*)$/.exec(e.target.value.slice(0, e.target.selectionStart));
+                  if (match) {
+                    setAutocompleteUsers(allUsers.filter(u => u.toLowerCase().startsWith(match[1].toLowerCase()) && u !== "Vous"));
+                    setShowAutocomplete(true);
+                  } else {
+                    setShowAutocomplete(false);
+                  }
+                }}
+                onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
+                placeholder="Ajouter un commentaire..."
+                className="w-full min-h-[60px]"
+              />
+              {showAutocomplete && autocompleteUsers.length > 0 && (
+                <div className="absolute bg-card border rounded shadow z-50 mt-1 max-h-40 overflow-auto">
+                  {autocompleteUsers.map(user => (
+                    <div
+                      key={user}
+                      className="px-3 py-2 hover:bg-muted cursor-pointer"
+                      onMouseDown={() => {
+                        setNewComment(c => c.replace(/@([\w]*)$/, `@${user} `));
+                        setShowAutocomplete(false);
+                      }}
+                    >
+                      @{user}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex justify-end mt-1">
+                <Button className="ml-2 btn-golden" onClick={handleAddComment} disabled={!newComment.trim()}>Envoyer</Button>
               </div>
-            )}
-            <div className="flex justify-end mt-1">
-              <Button className="ml-2 btn-golden" onClick={handleAddComment} disabled={!newComment.trim()}>Envoyer</Button>
             </div>
           </div>
-        </div>
-        <div className="space-y-4">
-          {comments.map(comment => (
-            <CommentThread
-              key={comment.id}
-              comment={comment}
-              onReply={onAddReply}
-              replyTo={replyTo}
-              setReplyTo={setReplyTo}
-              replyText={replyText}
-              setReplyText={setReplyText}
-              handleAddReply={handleAddReply}
-              navigate={navigate}
-              setShowThreadModal={setShowThreadModal}
-              openedReplies={openedReplies}
-              setOpenedReplies={setOpenedReplies}
-            />
-          ))}
-        </div>
-      </div>
+          <div className="space-y-4">
+            {comments.map(comment => (
+              <CommentThread
+                key={comment.id}
+                comment={comment}
+                onReply={onAddReply}
+                replyTo={replyTo}
+                setReplyTo={setReplyTo}
+                replyText={replyText}
+                setReplyText={setReplyText}
+                handleAddReply={handleAddReply}
+                navigate={navigate}
+                setShowThreadModal={setShowThreadModal}
+                openedReplies={openedReplies}
+                setOpenedReplies={setOpenedReplies}
+              />
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
       {showThreadModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-end md:items-center justify-center">
-          <div className="bg-background w-full max-w-md rounded-t-2xl md:rounded-2xl shadow-lg p-4 max-h-[90vh] overflow-y-auto pb-24">
-            <div className="flex justify-between items-center mb-2">
-              <DialogTitle className="text-lg font-bold">Sous-réponses</DialogTitle>
-              <Button variant="ghost" type="button" onClick={() => setShowThreadModal(null)}>Retour</Button>
-            </div>
+        <Dialog open={true} onOpenChange={(open) => !open && setShowThreadModal(null)}>
+          <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto pb-24">
+            <DialogHeader>
+              <div className="flex justify-between items-center">
+                <DialogTitle className="text-lg font-bold">Sous-réponses</DialogTitle>
+                <Button variant="ghost" type="button" onClick={() => setShowThreadModal(null)}>Retour</Button>
+              </div>
+            </DialogHeader>
             <div className="space-y-4">
               <CommentThread
                 comment={showThreadModal.comment}
@@ -292,9 +298,9 @@ export default function Comments({ postId, comments, onAddComment, onAddReply, o
                 setOpenedReplies={setOpenedReplies}
               />
             </div>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
-    </div>
+    </>
   );
 }
