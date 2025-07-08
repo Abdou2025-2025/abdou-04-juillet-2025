@@ -6,24 +6,37 @@ export function useVotes(playerId) {
   const [error, setError] = useState(null);
 
   const fetchVotes = useCallback(async () => {
+    if (!playerId) return;
+    
     setLoading(true);
-    // Simulation de votes
-    const mockVotes = [
-      { id: '1', player_id: playerId, user_id: 'user-123', value: 1 },
-      { id: '2', player_id: playerId, user_id: 'user-456', value: 1 }
-    ];
-    setVotes(mockVotes);
-    setLoading(false);
+    try {
+      // Simulation de votes
+      const mockVotes = [
+        { id: '1', player_id: playerId, user_id: 'user-123', value: 1 },
+        { id: '2', player_id: playerId, user_id: 'user-456', value: 1 }
+      ];
+      setVotes(mockVotes);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }, [playerId]);
 
   useEffect(() => {
-    if (!playerId) return;
-    fetchVotes();
+    if (playerId) {
+      fetchVotes();
+    }
   }, [playerId, fetchVotes]);
 
   const vote = useCallback(async (userId, value) => {
-    const newVote = { id: Date.now().toString(), player_id: playerId, user_id: userId, value };
-    setVotes(prev => [...prev, newVote]);
+    try {
+      const newVote = { id: Date.now().toString(), player_id: playerId, user_id: userId, value };
+      setVotes(prev => [...prev, newVote]);
+      return { error: null };
+    } catch (err) {
+      return { error: err };
+    }
   }, [playerId]);
 
   return { votes, loading, error, fetchVotes, vote };

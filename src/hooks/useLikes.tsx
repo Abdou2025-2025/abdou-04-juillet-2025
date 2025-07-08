@@ -6,28 +6,46 @@ export function useLikes(playerId) {
   const [error, setError] = useState(null);
 
   const fetchLikes = useCallback(async () => {
+    if (!playerId) return;
+    
     setLoading(true);
-    // Simulation de likes
-    const mockLikes = [
-      { id: '1', player_id: playerId, user_id: 'user-123' },
-      { id: '2', player_id: playerId, user_id: 'user-456' }
-    ];
-    setLikes(mockLikes);
-    setLoading(false);
+    try {
+      // Simulation de likes
+      const mockLikes = [
+        { id: '1', player_id: playerId, user_id: 'user-123' },
+        { id: '2', player_id: playerId, user_id: 'user-456' }
+      ];
+      setLikes(mockLikes);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }, [playerId]);
 
   useEffect(() => {
-    if (!playerId) return;
-    fetchLikes();
+    if (playerId) {
+      fetchLikes();
+    }
   }, [playerId, fetchLikes]);
 
   const like = useCallback(async (userId) => {
-    const newLike = { id: Date.now().toString(), player_id: playerId, user_id: userId };
-    setLikes(prev => [...prev, newLike]);
+    try {
+      const newLike = { id: Date.now().toString(), player_id: playerId, user_id: userId };
+      setLikes(prev => [...prev, newLike]);
+      return { error: null };
+    } catch (err) {
+      return { error: err };
+    }
   }, [playerId]);
 
   const unlike = useCallback(async (userId) => {
-    setLikes(prev => prev.filter(like => like.user_id !== userId));
+    try {
+      setLikes(prev => prev.filter(like => like.user_id !== userId));
+      return { error: null };
+    } catch (err) {
+      return { error: err };
+    }
   }, []);
 
   return { likes, loading, error, fetchLikes, like, unlike };

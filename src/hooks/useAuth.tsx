@@ -8,9 +8,15 @@ export function useAuth() {
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      setLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
+      } catch (err) {
+        console.error('Error getting session:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     };
 
     getSession();
@@ -27,53 +33,71 @@ export function useAuth() {
     setLoading(true);
     setError(null);
     
-    const { data, error } = await supabase.auth.signUp({ 
-      email, 
-      password,
-      options: {
-        emailRedirectTo: window.location.origin
+    try {
+      const { data, error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          emailRedirectTo: window.location.origin
+        }
+      });
+      
+      if (error) {
+        setError(error.message);
+        return { data: null, error };
       }
-    });
-    
-    setLoading(false);
-    if (error) {
-      setError(error.message);
-      return { data: null, error };
+      
+      return { data, error: null };
+    } catch (err) {
+      setError(err.message);
+      return { data: null, error: err };
+    } finally {
+      setLoading(false);
     }
-    
-    return { data, error: null };
   }, []);
 
   const signIn = useCallback(async (email, password) => {
     setLoading(true);
     setError(null);
     
-    const { data, error } = await supabase.auth.signInWithPassword({ 
-      email, 
-      password 
-    });
-    
-    setLoading(false);
-    if (error) {
-      setError(error.message);
-      return { data: null, error };
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password 
+      });
+      
+      if (error) {
+        setError(error.message);
+        return { data: null, error };
+      }
+      
+      return { data, error: null };
+    } catch (err) {
+      setError(err.message);
+      return { data: null, error: err };
+    } finally {
+      setLoading(false);
     }
-    
-    return { data, error: null };
   }, []);
 
   const signOut = useCallback(async () => {
     setLoading(true);
     setError(null);
     
-    const { error } = await supabase.auth.signOut();
-    
-    setLoading(false);
-    if (error) {
-      setError(error.message);
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        setError(error.message);
+      }
+      
+      return { error };
+    } catch (err) {
+      setError(err.message);
+      return { error: err };
+    } finally {
+      setLoading(false);
     }
-    
-    return { error };
   }, []);
 
   return { user, loading, error, signUp, signIn, signOut };

@@ -115,8 +115,6 @@ export default function Profile() {
       localStorage.setItem('theme', 'dark');
       setIsDark(true);
     }
-    // DEBUG
-    console.log('dark?', document.documentElement.classList.contains('dark'), 'body:', document.body.classList.contains('dark'));
   };
 
   const handlePasswordChange = () => {
@@ -139,7 +137,8 @@ export default function Profile() {
     });
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut();
     toast({
       title: "Déconnexion",
       description: "À bientôt ! Vous avez été déconnecté.",
@@ -151,6 +150,19 @@ export default function Profile() {
     const body = encodeURIComponent("Bonjour,\n\nJ'ai besoin d'aide concernant :\n\n[Décrivez votre demande]\n\nCordialement");
     window.open(`mailto:support@ballondor2025.com?subject=${subject}&body=${body}`);
   };
+
+  // Données simulées pour les statistiques
+  const userStats = {
+    posts: 12,
+    likes: 45,
+    votes: 23
+  };
+
+  const userFavorites = [
+    "Kylian Mbappé",
+    "Erling Haaland",
+    "Jude Bellingham"
+  ];
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -189,11 +201,21 @@ export default function Profile() {
                     <span>Notifications</span>
                     <Switch checked={notifications} onCheckedChange={handleToggleNotifications} />
                   </div>
-                  <Button variant="outline" className="w-full" onClick={handlePasswordChange}><Lock className="w-4 h-4 mr-2" />Changer le mot de passe</Button>
-                  <Button variant="outline" className="w-full" onClick={handleContactSupport}><Mail className="w-4 h-4 mr-2" />Contacter le support</Button>
-                  <Button variant="outline" className="w-full" onClick={handleReportProblem}><Flag className="w-4 h-4 mr-2" />Signaler un problème</Button>
-                  <Button variant="destructive" className="w-full" onClick={handleDeleteAccount}><Trash2 className="w-4 h-4 mr-2" />Supprimer le compte</Button>
-                  <Button variant="ghost" className="w-full" onClick={handleLogout}><LogOut className="w-4 h-4 mr-2" />Déconnexion</Button>
+                  <Button variant="outline" className="w-full" onClick={handlePasswordChange}>
+                    <Lock className="w-4 h-4 mr-2" />Changer le mot de passe
+                  </Button>
+                  <Button variant="outline" className="w-full" onClick={handleContactSupport}>
+                    <Mail className="w-4 h-4 mr-2" />Contacter le support
+                  </Button>
+                  <Button variant="outline" className="w-full" onClick={handleReportProblem}>
+                    <Flag className="w-4 h-4 mr-2" />Signaler un problème
+                  </Button>
+                  <Button variant="destructive" className="w-full" onClick={handleDeleteAccount}>
+                    <Trash2 className="w-4 h-4 mr-2" />Supprimer le compte
+                  </Button>
+                  <Button variant="ghost" className="w-full" onClick={handleLogout}>
+                    <LogOut className="w-4 h-4 mr-2" />Déconnexion
+                  </Button>
                 </div>
               </DialogContent>
             </Dialog>
@@ -206,11 +228,17 @@ export default function Profile() {
           <CardHeader className="flex flex-col items-center gap-2">
             <Avatar className="w-24 h-24">
               <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.username || 'avatar'} />
-              <AvatarFallback>{profile?.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+              <AvatarFallback>{profile?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}</AvatarFallback>
             </Avatar>
-            <h2 className="text-xl font-bold text-gradient-gold">{profile?.username || 'Nouveau profil'}</h2>
-            <p className="text-sm text-muted-foreground text-center">{profile?.bio || 'Aucune bio pour le moment.'}</p>
-            <Button size="sm" variant="outline" onClick={() => setEditingProfile(true)}><Edit3 className="w-4 h-4 mr-2" />Éditer le profil</Button>
+            <h2 className="text-xl font-bold text-gradient-gold">
+              {profile?.username || user?.email?.split('@')[0] || 'Nouveau profil'}
+            </h2>
+            <p className="text-sm text-muted-foreground text-center">
+              {profile?.bio || 'Aucune bio pour le moment.'}
+            </p>
+            <Button size="sm" variant="outline" onClick={() => setEditingProfile(true)}>
+              <Edit3 className="w-4 h-4 mr-2" />Éditer le profil
+            </Button>
           </CardHeader>
         </Card>
 
@@ -260,15 +288,15 @@ export default function Profile() {
           </CardHeader>
           <CardContent className="grid grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="font-bold text-2xl text-primary">{user?.stats?.posts || 0}</div>
+              <div className="font-bold text-2xl text-primary">{userStats.posts}</div>
               <div className="text-xs text-muted-foreground">Publications</div>
             </div>
             <div className="text-center">
-              <div className="font-bold text-2xl text-primary">{user?.stats?.likes || 0}</div>
+              <div className="font-bold text-2xl text-primary">{userStats.likes}</div>
               <div className="text-xs text-muted-foreground">J'aime reçus</div>
             </div>
             <div className="text-center">
-              <div className="font-bold text-2xl text-primary">{user?.stats?.votes || 0}</div>
+              <div className="font-bold text-2xl text-primary">{userStats.votes}</div>
               <div className="text-xs text-muted-foreground">Votes</div>
             </div>
           </CardContent>
@@ -283,7 +311,7 @@ export default function Profile() {
             </h3>
           </CardHeader>
           <CardContent className="space-y-2">
-            {user?.favorites?.map((favorite, index) => (
+            {userFavorites.map((favorite, index) => (
               <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
                 <span className="text-sm font-medium">{favorite}</span>
                 <Badge className="bg-primary/10 text-primary">

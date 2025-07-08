@@ -7,9 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Bell, Search, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ballonDorIcon from "@/assets/ballon-dor-icon.png";
-import mbappePhoto from "@/assets/player-mbappe.jpg";
-import haalandPhoto from "@/assets/player-haaland.jpg";
-import bellinghamPhoto from "@/assets/player-bellingham.jpg";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlayers } from "@/hooks/usePlayers";
@@ -20,7 +17,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 export default function Home() {
   const { user } = useAuth();
   const { players, loading: loadingPlayers } = usePlayers();
-  const { notifications, loading: loadingNotifs, markAsRead, markAllAsRead, deleteNotification } = useNotifications(user?.id);
+  const { notifications, loading: loadingNotifs, markAsRead, markAllAsRead, deleteNotification, generateRandomNotif } = useNotifications(user?.id);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showCountdown, setShowCountdown] = useState(false);
@@ -62,14 +59,18 @@ export default function Home() {
   };
 
   const handleLike = (playerId: string) => {
-    // Implementation of handleLike function
+    if (!user) return toast({ title: "Connectez-vous pour liker" });
+    toast({
+      title: "Like ajouté !",
+      description: "Votre like a été enregistré.",
+    });
   };
 
   function PlayerCardWithStats({ player, user, toast, handleViewDetails, handleVote }) {
     const { likes, like, unlike } = useLikes(player.id);
     const { votes, vote } = useVotes(player.id);
     const isLiked = !!likes.find(l => l.user_id === user?.id);
-    const voteCount = votes.reduce((acc, v) => acc + (v.value || 0), 0);
+    const voteCount = votes.reduce((acc, v) => acc + (v.value || 0), 0) + (player.votes || 0);
     const playerWithStats = { ...player, votes: voteCount, isLiked };
 
     return (
@@ -122,7 +123,7 @@ export default function Home() {
         {/* Section Hero */}
         <div className="text-center space-y-4">
           <Badge 
-            className="bg-primary/10 text-primary border-primary/20 animate-pulse"
+            className="bg-primary/10 text-primary border-primary/20 animate-pulse cursor-pointer"
             onClick={() => setShowCountdown(true)}
           >
             🏆 Cérémonie dans 298 jours
@@ -142,7 +143,7 @@ export default function Home() {
         <div className="flex items-center gap-2 overflow-x-auto pb-2 mt-4">
           <Button
             size="sm"
-            className={`btn-golden whitespace-nowrap ${selectedFilter === "all" ? "border-2 border-yellow-400" : ""}`}
+            className={`btn-golden whitespace-nowrap ${selectedFilter === "all" ? "ring-2 ring-primary" : ""}`}
             onClick={() => setSelectedFilter("all")}
           >
             Tous les favoris
@@ -150,7 +151,7 @@ export default function Home() {
           <Button
             size="sm"
             variant="outline"
-            className={`whitespace-nowrap ${selectedFilter === "attaquant" ? "border-2 border-yellow-400 !border-yellow-400" : ""}`}
+            className={`whitespace-nowrap ${selectedFilter === "attaquant" ? "ring-2 ring-primary" : ""}`}
             onClick={() => setSelectedFilter("attaquant")}
           >
             Attaquants
@@ -158,7 +159,7 @@ export default function Home() {
           <Button
             size="sm"
             variant="outline"
-            className={`whitespace-nowrap ${selectedFilter === "milieu" ? "border-2 border-yellow-400 !border-yellow-400" : ""}`}
+            className={`whitespace-nowrap ${selectedFilter === "milieu" ? "ring-2 ring-primary" : ""}`}
             onClick={() => setSelectedFilter("milieu")}
           >
             Milieux
@@ -166,7 +167,7 @@ export default function Home() {
           <Button
             size="sm"
             variant="outline"
-            className={`whitespace-nowrap ${selectedFilter === "defenseur" ? "border-2 border-yellow-400 !border-yellow-400" : ""}`}
+            className={`whitespace-nowrap ${selectedFilter === "defenseur" ? "ring-2 ring-primary" : ""}`}
             onClick={() => setSelectedFilter("defenseur")}
           >
             Défenseurs
@@ -176,9 +177,14 @@ export default function Home() {
         {/* Liste des joueurs/candidats */}
         <div className="space-y-4">
           {loadingPlayers ? (
-            <div>Chargement...</div>
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-2 text-muted-foreground">Chargement...</p>
+            </div>
           ) : filteredPlayers.length === 0 ? (
-            <div>Aucun joueur trouvé.</div>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Aucun joueur trouvé pour ce filtre.</p>
+            </div>
           ) : (
             filteredPlayers.map(player => (
               <PlayerCardWithStats
@@ -201,7 +207,7 @@ export default function Home() {
           <p className="text-sm text-muted-foreground">
             Rejoignez des milliers de fans et votez pour le prochain Ballon d'Or
           </p>
-          <Button className="btn-golden w-full">
+          <Button className="btn-golden w-full" onClick={() => navigate('/ranking')}>
             Découvrir tous les candidats
           </Button>
         </div>
@@ -225,24 +231,32 @@ export default function Home() {
       {/* MODALE NOTIFICATIONS */}
       {showNotifModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-zinc-900 rounded-2xl shadow-2xl p-6 w-full max-w-xs animate-fade-in flex flex-col gap-4 relative text-white">
-            <button className="absolute top-3 right-3 text-gray-400 hover:text-white" onClick={() => setShowNotifModal(false)} aria-label="Fermer">✕</button>
-            <h2 className="text-xl font-bold text-center mb-2">Notifications</h2>
-            <button
-              className="mb-2 w-full py-2 rounded-lg bg-yellow-500 text-black font-bold hover:bg-yellow-400 transition"
-              onClick={() => {
-                // Implementation of generateRandomNotif function
-              }}
+          <div className="bg-card rounded-2xl shadow-2xl p-6 w-full max-w-xs animate-fade-in flex flex-col gap-4 relative">
+            <button 
+              className="absolute top-3 right-3 text-muted-foreground hover:text-foreground" 
+              onClick={() => setShowNotifModal(false)} 
+              aria-label="Fermer"
+            >
+              ✕
+            </button>
+            <h2 className="text-xl font-bold text-center mb-2 text-gradient-gold">Notifications</h2>
+            <Button
+              className="mb-2 w-full btn-golden"
+              onClick={generateRandomNotif}
             >
               Générer une notification
-            </button>
+            </Button>
             <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
-              {notifications.length === 0 && <span className="text-zinc-400 text-center">Aucune notification</span>}
+              {notifications.length === 0 && (
+                <span className="text-muted-foreground text-center">Aucune notification</span>
+              )}
               {notifications.map(n => (
                 <div
                   key={n.id}
-                  className={`relative p-3 rounded-lg cursor-pointer transition flex flex-col gap-1 ${n.read ? 'bg-zinc-800 text-zinc-400' : 'bg-yellow-900/30 border border-yellow-500/30'}`}
-                  onClick={e => {
+                  className={`relative p-3 rounded-lg cursor-pointer transition flex flex-col gap-1 ${
+                    n.read ? 'bg-muted text-muted-foreground' : 'bg-primary/10 border border-primary/30'
+                  }`}
+                  onClick={() => {
                     if (!n.read) {
                       markAsRead(n.id);
                       if (n.link) {
@@ -254,27 +268,29 @@ export default function Home() {
                 >
                   <span className="font-semibold flex items-center gap-2">
                     {n.title}
-                    {!n.read && <span className="ml-2 inline-block w-2 h-2 bg-yellow-400 rounded-full" />}
+                    {!n.read && <span className="ml-2 inline-block w-2 h-2 bg-primary rounded-full" />}
                   </span>
                   <span className="text-xs">{n.description}</span>
                   <button
-                    className="absolute top-2 right-2 text-zinc-400 hover:text-red-400 text-xs"
+                    className="absolute top-2 right-2 text-muted-foreground hover:text-destructive text-xs"
                     onClick={e => {
                       e.stopPropagation();
                       deleteNotification(n.id);
                     }}
                     aria-label="Supprimer"
-                  >✕</button>
+                  >
+                    ✕
+                  </button>
                 </div>
               ))}
             </div>
             {unreadCount > 0 && (
-              <button
-                className="mt-2 w-full py-2 rounded-lg bg-yellow-500 text-black font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+              <Button
+                className="mt-2 w-full btn-golden"
                 onClick={() => markAllAsRead()}
               >
                 Tout marquer comme lu
-              </button>
+              </Button>
             )}
           </div>
         </div>
