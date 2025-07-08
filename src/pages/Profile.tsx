@@ -30,7 +30,7 @@ import { useProfile } from '@/hooks/useProfile';
 
 export default function Profile() {
   const { user, signOut } = useAuth();
-  const { profile, loading, updateProfile } = useProfile(user?.id);
+  const { profile, loading, updateProfile } = useProfile('guest-user');
   const [isDark, setIsDark] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [editingProfile, setEditingProfile] = useState(false);
@@ -43,7 +43,7 @@ export default function Profile() {
 
   useEffect(() => {
     setEditForm({
-      username: profile?.username || '',
+      username: profile?.username || 'Utilisateur Invité',
       bio: profile?.bio || '',
       avatar_url: profile?.avatar_url || ''
     });
@@ -231,10 +231,10 @@ export default function Profile() {
               <AvatarFallback>{profile?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}</AvatarFallback>
             </Avatar>
             <h2 className="text-xl font-bold text-gradient-gold">
-              {profile?.username || user?.email?.split('@')[0] || 'Nouveau profil'}
+              {profile?.username || 'Utilisateur Invité'}
             </h2>
             <p className="text-sm text-muted-foreground text-center">
-              {profile?.bio || 'Aucune bio pour le moment.'}
+              {profile?.bio || 'Utilisateur en mode invité - Créez un compte pour personnaliser votre profil.'}
             </p>
             <Button size="sm" variant="outline" onClick={() => setEditingProfile(true)}>
               <Edit3 className="w-4 h-4 mr-2" />Éditer le profil

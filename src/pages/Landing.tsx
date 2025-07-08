@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import ballonDorIcon from '@/assets/ballon-dor-icon.png';
-import { AuthModal } from '@/components/ui/AuthModal';
 
-export default function Landing() {
-  const [showAuth, setShowAuth] = useState(false);
+interface LandingProps {
+  onStart: () => void;
+}
 
+export default function Landing({ onStart }: LandingProps) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-yellow-100 via-yellow-300 to-yellow-500">
       <div className="flex flex-col items-center gap-6 p-8 rounded-3xl shadow-2xl bg-white/80 border border-yellow-300">
@@ -15,12 +15,11 @@ export default function Landing() {
         </p>
         <button
           className="mt-4 px-8 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold text-lg shadow-lg hover:scale-105 transition"
-          onClick={() => setShowAuth(true)}
+          onClick={onStart}
         >
           Commencer
         </button>
       </div>
-      <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
     </div>
   );
-} 
+}

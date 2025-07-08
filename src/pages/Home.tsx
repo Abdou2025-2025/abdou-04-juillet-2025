@@ -17,7 +17,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 export default function Home() {
   const { user } = useAuth();
   const { players, loading: loadingPlayers } = usePlayers();
-  const { notifications, loading: loadingNotifs, markAsRead, markAllAsRead, deleteNotification, generateRandomNotif } = useNotifications(user?.id);
+  const { notifications, loading: loadingNotifs, markAsRead, markAllAsRead, deleteNotification, generateRandomNotif } = useNotifications('guest-user');
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showCountdown, setShowCountdown] = useState(false);
@@ -50,7 +50,6 @@ export default function Home() {
   };
 
   const handleVote = async (playerId: string) => {
-    if (!user) return toast({ title: "Connectez-vous pour voter" });
     const player = players.find(p => p.id === playerId);
     toast({
       title: "Vote enregistré !",
@@ -59,7 +58,6 @@ export default function Home() {
   };
 
   const handleLike = (playerId: string) => {
-    if (!user) return toast({ title: "Connectez-vous pour liker" });
     toast({
       title: "Like ajouté !",
       description: "Votre like a été enregistré.",
@@ -69,7 +67,7 @@ export default function Home() {
   function PlayerCardWithStats({ player, user, toast, handleViewDetails, handleVote }) {
     const { likes, like, unlike } = useLikes(player.id);
     const { votes, vote } = useVotes(player.id);
-    const isLiked = !!likes.find(l => l.user_id === user?.id);
+    const isLiked = !!likes.find(l => l.user_id === 'guest-user');
     const voteCount = votes.reduce((acc, v) => acc + (v.value || 0), 0) + (player.votes || 0);
     const playerWithStats = { ...player, votes: voteCount, isLiked };
 
@@ -78,9 +76,8 @@ export default function Home() {
         key={player.id}
         player={playerWithStats}
         onLike={async () => {
-          if (!user) return toast({ title: "Connectez-vous pour liker" });
-          if (isLiked) await unlike(user.id);
-          else await like(user.id);
+          if (isLiked) await unlike('guest-user');
+          else await like('guest-user');
         }}
         onVote={() => handleVote(player.id)}
         onViewDetails={() => handleViewDetails(player)}
@@ -190,7 +187,7 @@ export default function Home() {
               <PlayerCardWithStats
                 key={player.id}
                 player={player}
-                user={user}
+                user={{ id: 'guest-user' }}
                 toast={toast}
                 handleViewDetails={handleViewDetails}
                 handleVote={handleVote}
